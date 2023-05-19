@@ -12,6 +12,8 @@
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 /*** data ***/
+
+/*** structure to store configs for the editor **/
 struct editorConfig {
 	int screenrows;
 	int screencols;
@@ -22,6 +24,8 @@ struct editorConfig E;
 
 /*** terminal **/
 
+/*** displays error messages ***/
+
 void die(const char *s) {
 	write(STDOUT_FILENO, "\x1b[2J", 4);
 	write(STDOUT_FILENO, "\x1b[H", 3);
@@ -30,10 +34,14 @@ void die(const char *s) {
 	exit(1);
 }
 
+/*** disable terminal raw mode on editor exit ***/
+
 void disableRawMode() {
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.orig_termios) == -1)
 		die("tcsetattr");
 }
+
+/*** enable terminal raw mode ***/
 
 void enableRawMode()
 {
@@ -56,6 +64,8 @@ void enableRawMode()
 
 }
 
+/*** read a character input (low level input) **/
+
 char editorReadKey() {
 	int nread;
 	char c;
@@ -65,6 +75,8 @@ char editorReadKey() {
 	}
 	return c;
 }
+
+/*** get the current position of the cursor ***/
 
 int getCursorPosition(int *rows, int *cols) {
 	if (write(STDOUT_FILENO, "\x1b[6n", 4) != 4) return -1;
@@ -85,6 +97,8 @@ int getCursorPosition(int *rows, int *cols) {
 	return -1;
 }
 
+/*** get the window size of the terminal ***/
+
 int getWindowSize(int *rows, int *cols) {
 	struct winsize ws;
 
@@ -101,6 +115,8 @@ int getWindowSize(int *rows, int *cols) {
 }
 
 /*** input **/
+
+/*** processes the character inputs from editorReadKey() ***/
 void editorProcessKeypress() {
 	char c = editorReadKey();
 
@@ -113,6 +129,8 @@ void editorProcessKeypress() {
 
 /*** output ***/
 
+/*** draw a column of rows like Vim ***/
+
 void editorDrawRows() {
 	int y;
 	for (y=0; y < E.screenrows; y++)
@@ -121,6 +139,7 @@ void editorDrawRows() {
 	}
 }
 
+/*** clears the screen and resets the cursor ***/
 void editorRefreshScreen() {
 	write(STDOUT_FILENO, "\x1b[2J", 4);
 	write(STDOUT_FILENO, "\x1b[H", 3);
